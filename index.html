@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Product Recommendation Quiz</title>
+    <style>
+        /* FONT DEFINITIONS USING BRAZE OTF & TTF CDN LINKS */
+        @font-face {
+            font-family: 'TitleFont';
+            src: url('https://cdn.braze.eu/appboy/communication/assets/font_assets/files/6a79e22cc1e8030088109774/original.otf?1786372652') format('opentype');
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'GT Haptic';
+            src: url('https://cdn.braze.eu/appboy/communication/assets/font_assets/files/6a79d37e76163e008a9899e7/original.ttf?1786368893') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        :root {
+            --forest-green: #00845C;
+            --forest-accent: #00845C;
+            --light-bg: #FFF9F2;
+            --card-bg: #ffffff;
+            --text-main: #44231C;
+            --text-muted: #6e4d46;
+            --border-color: #e8dbce;
+            
+            /* Font Variables */
+            --font-body: 'GT Haptic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-title: 'TitleFont', 'GT Haptic', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: var(--font-body);
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            background-color: var(--light-bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(68, 35, 28, 0.06);
+            width: 100%;
+            max-width: 580px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Close Button Styling - Explicitly Non-Italic */
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-style: normal; /* Removes italics */
+            color: var(--text-muted);
+            text-decoration: none;
+            line-height: 1;
+            z-index: 10;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s;
+            font-family: var(--font-title);
+        }
+
+        .close-btn:hover {
+            color: var(--text-main);
+        }
+
+        .progress-bar-container {
+            width: calc(100% - 32px);
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--forest-accent);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+
+        /* Cover Screen Styles */
+        .cover-panel {
+            text-align: center;
+            padding: 24px 8px 12px 8px;
+        }
+
+        .cover-logo {
+            max-width: 140px;
+            height: auto;
+            max-height: 42px;
+            object-fit: contain;
+            margin-bottom: 24px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Cover Title: MOHR, ALL CAPS */
+        .cover-title {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            line-height: 1.25;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+
+        .cover-description {
+            font-family: var(--font-body);
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        /* Start Button: MOHR, ALL CAPS */
+        .btn-start {
+            font-family: var(--font-title);
+            background-color: var(--forest-green);
+            color: #ffffff;
+            width: 100%;
+            padding: 16px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-start:hover {
+            background-color: #006848;
+        }
+
+        /* Step Indicator: MOHR, ALL CAPS */
+        .step-indicator {
+            font-family: var(--font-title);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--forest-accent);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Question: MOHR, ALL CAPS */
+        .question-title {
+            font-family: var(--font-title);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            line-height: 1.3;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        /* Multiple Choice Answers: GT Haptic, Lower Case, Regular Weight */
+        .option-btn {
+            font-family: var(--font-body);
+            background-color: #ffffff;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 400; /* Regular weight */
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: lowercase; /* Lower case */
+        }
+
+        .option-btn:hover {
+            border-color: var(--forest-accent);
+            background-color: rgba(0, 132, 92, 0.04);
+        }
+
+        .option-btn.selected {
+            border-color: var(--forest-accent);
+            background-color: rgba(0, 132, 92, 0.08);
+            color: var(--forest-accent);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Buttons: MOHR, ALL CAPS */
+        .btn {
+            font-family: var(--font-title);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--text-muted);
+            font-family: var(--font-title);
+        }
+
+        .btn-back:hover {
+            color: var(--text-main);
+        }
+
+        .btn-next {
+            background-color: var(--forest-green);
+            color: #ffffff;
+            font-family: var(--font-title);
+        }
+
+        .btn-next:hover {
+            background-color: #006848;
+        }
+
+        .btn-next:disabled {
+            background-color: #b8d4ca;
+            cursor: not-allowed;
+        }
+
+        .btn-buy {
+            background-color: var(--forest-green);
+            color: #ffffff;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-family: var(--font-title);
+            text-transform: uppercase;
+        }
+
+        .btn-buy:hover {
+            background-color: #006848;
+        }
+
+        /* Results Screen Styles */
+        .result-card {
+            text-align: center;
+        }
+
+        .result-badge {
+            display: inline-block;
+            background-color: rgba(0, 132, 92, 0.12);
+            color: var(--forest-green);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+            letter-spacing: 0.8px;
+            font-family: var(--font-title);
+            text-transform: uppercase;
+        }
+
+        .single-result {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .product-header-group {
+            margin-bottom: 8px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .product-title {
+            font-family: var(--font-title);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+            line-height: 1.15;
+            text-transform: uppercase;
+        }
+
+        .product-title-logo {
+            max-height: 52px;
+            width: auto;
+            max-width: 220px;
+            margin-bottom: 4px;
+            display: inline-block;
+            object-fit: contain;
+        }
+
+        .price-details-card {
+            background-color: rgba(0, 132, 92, 0.05);
+            border: 1px solid rgba(0, 132, 92, 0.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .product-price {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--forest-green);
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+
+        .card-pills-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .feature-pill {
+            display: inline-block;
+            background-color: var(--text-main);
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 10px;
+            letter-spacing: 0.6px;
+            font-family: var(--font-title);
+            text-transform: uppercase;
+        }
+
+        .product-allowance {
+            font-family: var(--font-title);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--forest-green);
+            background-color: rgba(0, 132, 92, 0.1);
+            padding: 3px 10px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .product-reason {
+            font-family: var(--font-body);
+            font-size: 0.98rem;
+            color: var(--text-main);
+            line-height: 1.5;
+            margin-bottom: 24px;
+            background-color: var(--light-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            width: 100%;
+        }
+
+        .product-reason strong {
+            color: var(--forest-green);
+        }
+
+        .btn-restart {
+            background-color: transparent;
+            color: var(--text-muted);
+            width: 100%;
+            padding: 12px;
+            font-size: 0.95rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            font-family: var(--font-title);
+            text-transform: uppercase;
+        }
+
+        .btn-restart:hover {
+            background-color: var(--light-bg);
+            color: var(--text-main);
+        }
+
+        .step-panel {
+            display: none;
+        }
+
+        .step-panel.active {
+            display: block;
+        }
+
+        .img-preloader {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            z-index: -100;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="img-preloader">
+    <img src="https://cdn.braze.eu/appboy/communication/assets/image_assets/images/6a79e8770efdb00088bdb699/original.png?1786374262" alt="preload flex">
+    <img src="https://cdn.braze.eu/appboy/communication/assets/image_assets/images/6a79e9c958cd8100881d8657/original.png?1786374600" alt="preload plus">
+</div>
+
+<div class="quiz-container">
+    <a href="#" class="close-btn" onclick="appboyBridge.closeMessage(); return false;">✕</a>
+
+    <div class="progress-bar-container" id="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <!-- COVER STEP -->
+    <div class="step-panel active" id="step-0">
+        <div class="cover-panel">
+            <img src="https://cdn.braze.eu/appboy/communication/assets/image_assets/images/6a75e22dd8b6e90088643cd4/original.png?1786110508" alt="Forest Logo" class="cover-logo">
+            <h1 class="cover-title">Let’s find your perfect match</h1>
+            <p class="cover-description">We’ve made it simple. Answer a few quick questions to discover your ideal Forest bundle or subscription.</p>
+            <button class="btn-start" onclick="startQuiz()">Find My Match</button>
+        </div>
+    </div>
+
+    <!-- STEP 1: Q1 -->
+    <div class="step-panel" id="step-1">
+        <div class="step-indicator" id="ind-1">Question 1 of 4</div>
+        <h2 class="question-title">How often do you ride?</h2>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q1', 'daily', this)">Daily</button>
+            <button class="option-btn" onclick="selectOption('q1', 'weekly', this)">Weekly</button>
+            <button class="option-btn" onclick="selectOption('q1', 'monthly', this)">Monthly</button>
+            <button class="option-btn" onclick="selectOption('q1', 'less_monthly', this)">Less than monthly</button>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-next" id="next-1" disabled onclick="nextStep()">Next</button>
+        </div>
+    </div>
+
+    <!-- STEP 2A: Q2-1 (Daily / Weekly) -->
+    <div class="step-panel" id="step-2-branch1">
+        <div class="step-indicator" id="ind-2a">Question 2 of 4</div>
+        <h2 class="question-title">Do you usually ride multiple times a day?</h2>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q2_1', 'yes', this)">Yes</button>
+            <button class="option-btn" onclick="selectOption('q2_1', 'no', this)">No</button>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-next" id="next-2a" disabled onclick="nextStep()">Next</button>
+        </div>
+    </div>
+
+    <!-- STEP 2B: Q2-2 (Monthly / Less) -->
+    <div class="step-panel" id="step-2-branch2">
+        <div class="step-indicator" id="ind-2b">Question 2 of 4</div>
+        <h2 class="question-title">On days when you ride, how many separate trips do you usually take?</h2>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q2_2', '1_trip', this)">Just 1 trip</button>
+            <button class="option-btn" onclick="selectOption('q2_2', '2_trips', this)">2 trips (e.g. there & back)</button>
+            <button class="option-btn" onclick="selectOption('q2_2', '3_plus_trips', this)">3+ trips (e.g. riding all day)</button>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-next" id="next-2b" disabled onclick="nextStep()">Next</button>
+        </div>
+    </div>
+
+    <!-- STEP 3: Q3 -->
+    <div class="step-panel" id="step-3">
+        <div class="step-indicator" id="ind-3">Question 3 of 4</div>
+        <h2 class="question-title">How long are you typically riding for?</h2>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q3', '5_15', this)">5–15 minutes</button>
+            <button class="option-btn" onclick="selectOption('q3', '16_30', this)">16–30 minutes</button>
+            <button class="option-btn" onclick="selectOption('q3', '30_plus', this)">30+ minutes</button>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-next" id="next-3" disabled onclick="handleStep3Next()">Next</button>
+        </div>
+    </div>
+
+    <!-- STEP 4: Q4 -->
+    <div class="step-panel" id="step-4">
+        <div class="step-indicator" id="ind-4">Question 4 of 4</div>
+        <h2 class="question-title">Is your riding schedule predictable or spontaneous?</h2>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('q4', 'predictable', this)">Predictable schedule (e.g. daily commute)</button>
+            <button class="option-btn" onclick="selectOption('q4', 'spontaneous', this)">Spontaneous & flexible</button>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-next" id="next-4" disabled onclick="calculateResult()">See My Recommendation</button>
+        </div>
+    </div>
+
+    <!-- RESULT STEP -->
+    <div class="step-panel" id="step-result">
+        <div class="result-card">
+            <div class="result-badge" id="res-badge">Recommended for You</div>
+            
+            <div id="single-result-view" class="single-result">
+                <div class="product-header-group">
+                    <div id="res-title-container" style="width: 100%;"></div>
+                </div>
+
+                <div class="price-details-card" id="res-price-card">
+                    <div class="product-price" id="res-price">£69.99 / month</div>
+                    <div class="card-pills-row" id="res-pills-row">
+                        <div id="res-pill" class="feature-pill" style="display: none;"></div>
+                        <div id="res-allowance" class="product-allowance" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="product-reason" id="res-reason">Explanation text goes here.</div>
+                
+                <a href="#" target="_blank" class="btn btn-buy" id="res-buy-btn">Get this subscription</a>
+            </div>
+
+            <button class="btn-restart" onclick="restartQuiz()">Retake the quiz</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // PRODUCT COPY & WEB LINK DICTIONARY
+    const productDetails = {
+        "20-Minute Bundle": {
+            price: "£2.99 / 24 hours",
+            copy: "Our smallest bundle gives you unbeatable value against our pay as you go, saving you up to 60%. Perfect for one-off, short trips and getting across the city.",
+            link: "https://link.forest.me/20-Minute-Bundle",
+            type: "bundle"
+        },
+        "35-Minute Bundle": {
+            price: "£3.99 / 24 hours",
+            copy: "You take the occasional bike ride and want to save on longer or return journeys. Save up to 68% vs. pay as you go with our £3.99 pass that gives you 35 minutes to use over 24 hours, giving you smooth, stress-free journeys that don’t cost the earth.",
+            link: "https://link.forest.me/35-Minute-Bundle",
+            type: "bundle"
+        },
+        "Day Pass": {
+            price: "£9.99 / 24 hours",
+            pill: "Unlimited",
+            copy: "When you ride, you go all in! At £9.99, the Day Pass gives you UNLIMITED riding for a full 24 hours, giving you complete freedom to ride as much as you like for the day. Bargain!",
+            link: "https://link.forest.me/day-pass",
+            type: "bundle"
+        },
+        "70-Minute Bundle": {
+            price: "£6.99 / 3 days",
+            copy: "You ride in short, concentrated bursts over a few days. For £6.99, this 3-day bundle packs 70-minutes with free unlocks - making it super easy to hop on and off without worrying about expiring minutes.",
+            link: "https://link.forest.me/70-Minute-Bundle",
+            type: "bundle"
+        },
+        "250-Minute Bundle": {
+            price: "£18.99 / 7 days",
+            copy: "You have a busy weekly schedule with predictable rides or a multi-trip routine. This 7-day bundle gives you 250 minutes for just £18.99, offering a huge discount on your weekly travel while keeping your unlock fees completely covered.",
+            link: "https://link.forest.me/250-Minute-Bundle",
+            type: "bundle"
+        },
+        "500-Minute Bundle": {
+            price: "£36.99 / 30 days",
+            copy: "Looks like you’re a regular commuter with a structured routine. For £36.99 a month, this bundle gives you 500 minutes to use over 30 days. It’s the ultimate cost-effective solution for steady, predictable daily or weekday travel.",
+            link: "https://link.forest.me/500-Minute-Bundle",
+            type: "bundle"
+        },
+        "Forest Flex": {
+            price: "£6.99 / month<br><span style='font-size: 0.95rem; font-weight: 600; color: var(--text-main); font-family: var(--font-title);'>+ £1/10 min or £1.70/30 min</span>",
+            pill: "Monthly Rolling",
+            logo: "https://cdn.braze.eu/appboy/communication/assets/image_assets/images/6a79e8770efdb00088bdb699/original.png?1786374262",
+            copy: "You ride frequently, but your schedule is spontaneous. Our monthly subscription Forest Flex drops your pay-as-you-go rates down to just £1/10 min or £1.70/30 min. Enjoy unlimited rides with no unused minutes left over, and no expiry dates to worry about.",
+            link: "https://link.forest.me/Forest-Flex",
+            type: "subscription"
+        },
+        "Forest Plus": {
+            price: "£69.99 / month",
+            pill: "Monthly Rolling",
+            logo: "https://cdn.braze.eu/appboy/communication/assets/image_assets/images/6a79e9c958cd8100881d8657/original.png?1786374600",
+            allowance: "1,200 mins included",
+            copy: "You’re a daily rider taking multiple trips or longer journeys every week. Our monthly subscription Forest Plus gives you a generous 1,200 minutes a month for £69.99/month. Guaranteed to be our absolute lowest cost per minute and maximum savings.",
+            link: "https://link.forest.me/ForestPlus",
+            type: "subscription"
+        }
+    };
+
+    const quizState = {
+        q1: null,
+        q2_1: null,
+        q2_2: null,
+        q3: null,
+        q4: null
+    };
+
+    let currentStep = 0;
+
+    function getTotalSteps() {
+        return (quizState.q1 === 'less_monthly') ? 3 : 4;
+    }
+
+    function startQuiz() {
+        document.getElementById('step-0').classList.remove('active');
+        currentStep = 1;
+        document.getElementById('step-1').classList.add('active');
+        document.getElementById('progress-container').style.display = 'block';
+        updateStepIndicators();
+        updateProgressBar();
+    }
+
+    function selectOption(key, value, element) {
+        quizState[key] = value;
+        
+        const parent = element.parentElement;
+        const buttons = parent.querySelectorAll('.option-btn');
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        
+        element.classList.add('selected');
+
+        if (key === 'q1') {
+            updateStepIndicators();
+        }
+
+        if (currentStep === 1) document.getElementById('next-1').disabled = false;
+        if (currentStep === 2 && (quizState.q1 === 'daily' || quizState.q1 === 'weekly')) document.getElementById('next-2a').disabled = false;
+        if (currentStep === 2 && (quizState.q1 === 'monthly' || quizState.q1 === 'less_monthly')) document.getElementById('next-2b').disabled = false;
+        if (currentStep === 3) document.getElementById('next-3').disabled = false;
+        if (currentStep === 4) document.getElementById('next-4').disabled = false;
+    }
+
+    function updateStepIndicators() {
+        const total = getTotalSteps();
+        document.getElementById('ind-1').innerText = `Question 1 of ${total}`;
+        document.getElementById('ind-2a').innerText = `Question 2 of ${total}`;
+        document.getElementById('ind-2b').innerText = `Question 2 of ${total}`;
+        document.getElementById('ind-3').innerText = `Question 3 of ${total}`;
+        document.getElementById('ind-4').innerText = `Question 4 of ${total}`;
+
+        const q3NextBtn = document.getElementById('next-3');
+        if (quizState.q1 === 'less_monthly') {
+            q3NextBtn.innerText = 'See My Recommendation';
+        } else {
+            q3NextBtn.innerText = 'Next';
+        }
+    }
+
+    function updateProgressBar() {
+        const progressBar = document.getElementById('progress-bar');
+        const total = getTotalSteps();
+        if (currentStep >= 1 && currentStep <= total) {
+            progressBar.style.width = (currentStep / total) * 100 + '%';
+        } else {
+            document.getElementById('progress-container').style.display = 'none';
+        }
+    }
+
+    function handleStep3Next() {
+        if (quizState.q1 === 'less_monthly') {
+            calculateResult();
+        } else {
+            nextStep();
+        }
+    }
+
+    function nextStep() {
+        document.getElementById(`step-${getStepId(currentStep)}`).classList.remove('active');
+        currentStep++;
+        document.getElementById(`step-${getStepId(currentStep)}`).classList.add('active');
+        updateProgressBar();
+    }
+
+    function prevStep() {
+        document.getElementById(`step-${getStepId(currentStep)}`).classList.remove('active');
+        
+        if (currentStep === 'result') {
+            currentStep = (quizState.q1 === 'less_monthly') ? 3 : 4;
+        } else {
+            currentStep--;
+        }
+
+        if (currentStep === 0) {
+            document.getElementById('step-0').classList.add('active');
+            document.getElementById('progress-container').style.display = 'none';
+        } else {
+            document.getElementById(`step-${getStepId(currentStep)}`).classList.add('active');
+            updateProgressBar();
+        }
+    }
+
+    function getStepId(step) {
+        if (step === 0) return '0';
+        if (step === 1) return '1';
+        if (step === 2) {
+            return (quizState.q1 === 'daily' || quizState.q1 === 'weekly') ? '2-branch1' : '2-branch2';
+        }
+        if (step === 3) return '3';
+        if (step === 4) return '4';
+        return 'result';
+    }
+
+    function calculateResult() {
+        const { q1, q2_1, q2_2, q3, q4 } = quizState;
+        
+        let selectedProduct = "";
+
+        if (q1 === 'daily') {
+            if (q2_1 === 'yes') {
+                if (q3 === '30_plus' || q3 === '16_30') {
+                    selectedProduct = "Forest Plus";
+                } else {
+                    selectedProduct = (q4 === 'predictable') ? "500-Minute Bundle" : "Forest Flex";
+                }
+            } else {
+                if (q3 === '30_plus') {
+                    selectedProduct = "Forest Plus";
+                } else if (q3 === '16_30') {
+                    selectedProduct = (q4 === 'predictable') ? "500-Minute Bundle" : "Forest Flex";
+                } else {
+                    selectedProduct = (q4 === 'predictable') ? "250-Minute Bundle" : "Forest Flex";
+                }
+            }
+        } 
+        else if (q1 === 'weekly') {
+            if (q2_1 === 'yes' && q3 === '30_plus') {
+                selectedProduct = (q4 === 'predictable') ? "250-Minute Bundle" : "Day Pass";
+            } else if (q3 === '16_30') {
+                selectedProduct = (q4 === 'predictable') ? "250-Minute Bundle" : "Forest Flex";
+            } else {
+                selectedProduct = (q4 === 'predictable') ? "70-Minute Bundle" : "Forest Flex";
+            }
+        } 
+        else if (q1 === 'monthly') {
+            if (q2_2 === '3_plus_trips' || (q2_2 === '2_trips' && q3 === '30_plus')) {
+                selectedProduct = "Day Pass";
+            } else if (q3 === '16_30' || q3 === '30_plus' || q2_2 === '2_trips') {
+                selectedProduct = (q4 === 'predictable') ? "35-Minute Bundle" : "Forest Flex";
+            } else {
+                selectedProduct = (q4 === 'predictable') ? "20-Minute Bundle" : "Forest Flex";
+            }
+        }
+        else {
+            if (q2_2 === '3_plus_trips' || (q2_2 === '2_trips' && q3 === '30_plus')) {
+                selectedProduct = "Day Pass";
+            } else if (q3 === '16_30' || q3 === '30_plus' || q2_2 === '2_trips') {
+                selectedProduct = "35-Minute Bundle";
+            } else {
+                selectedProduct = "20-Minute Bundle";
+            }
+        }
+
+        const details = productDetails[selectedProduct];
+        
+        // Dynamic Title / Logo Rendering
+        const titleContainer = document.getElementById('res-title-container');
+        titleContainer.innerHTML = '';
+
+        if (details.logo) {
+            const img = document.createElement('img');
+            img.src = details.logo;
+            img.alt = selectedProduct;
+            img.className = 'product-title-logo';
+            img.onerror = function() {
+                titleContainer.innerHTML = `<h1 class="product-title">${selectedProduct}</h1>`;
+            };
+            titleContainer.appendChild(img);
+        } else {
+            const h1 = document.createElement('h1');
+            h1.className = 'product-title';
+            h1.innerText = selectedProduct;
+            titleContainer.appendChild(h1);
+        }
+
+        const priceCard = document.getElementById('res-price-card');
+        if (details.price && details.price.trim() !== "") {
+            priceCard.style.display = "flex";
+            document.getElementById('res-price').innerHTML = details.price;
+        } else {
+            priceCard.style.display = "none";
+        }
+
+        document.getElementById('res-reason').innerHTML = details.copy;
+        
+        const buyBtn = document.getElementById('res-buy-btn');
+        buyBtn.href = details.link;
+        
+        const pillEl = document.getElementById('res-pill');
+        const allowanceEl = document.getElementById('res-allowance');
+
+        if (details.pill) {
+            pillEl.innerText = details.pill;
+            pillEl.style.display = "inline-block";
+        } else {
+            pillEl.style.display = "none";
+        }
+
+        if (details.allowance) {
+            allowanceEl.innerText = details.allowance;
+            allowanceEl.style.display = "inline-block";
+        } else {
+            allowanceEl.style.display = "none";
+        }
+
+        if (details.type === "subscription") {
+            buyBtn.innerText = "Get this subscription";
+        } else {
+            buyBtn.innerText = "Get this bundle";
+        }
+
+        const activePanel = document.querySelector('.step-panel.active');
+        if (activePanel) activePanel.classList.remove('active');
+        
+        currentStep = 'result';
+        document.getElementById('step-result').classList.add('active');
+        updateProgressBar();
+    }
+
+    function restartQuiz() {
+        quizState.q1 = null;
+        quizState.q2_1 = null;
+        quizState.q2_2 = null;
+        quizState.q3 = null;
+        quizState.q4 = null;
+        
+        currentStep = 1;
+
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelectorAll('.btn-next').forEach(btn => btn.disabled = true);
+
+        document.getElementById('step-result').classList.remove('active');
+        document.getElementById('step-0').classList.remove('active');
+        document.getElementById('step-1').classList.add('active');
+        
+        document.getElementById('progress-container').style.display = 'block';
+        updateStepIndicators();
+        updateProgressBar();
+    }
+</script>
+
+</body>
+</html>
